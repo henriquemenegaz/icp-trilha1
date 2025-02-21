@@ -1,18 +1,16 @@
-actor MeuDapp {
-  // Declaração de Variáveis
-  let numero1 : Nat = 10;
-  let numero2 : Int = 20;
-  let mensagem : Text = "Meu primeiro Dapp";
+import Buffer "mo:base/Buffer";
 
-  public query func chamarSomar(a : Nat, b : Nat) : async Nat {
-    return a + b;
+actor Main {
+  type Buffer<X> = Buffer.Buffer<X>;
+
+  // Buffer que armazena nomes do tipo Text
+  var pessoas : Buffer<Text> = Buffer.Buffer<Text>(0);
+
+  public func adicionarPessoa(nomePessoa : Text) : async () {
+    pessoas.add(nomePessoa); // Adiciona o nome ao final do Buffer
   };
 
-  public query func chamarSubtrair(a : Nat, b : Nat) : async Nat {
-    return a - b;
-  };
-
-  public query func chamarMultiplicar(a : Nat, b : Nat) : async Nat {
-    return a*b;
+  public query func listarPessoas() : async [Text] {
+    return Buffer.toArray(pessoas); // Converte o Buffer em um Array para retornar
   };
 };
