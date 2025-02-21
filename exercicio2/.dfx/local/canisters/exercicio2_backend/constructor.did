@@ -1,0 +1,5 @@
+service : {
+  chamarMultiplicar: (nat, nat) -> (nat) query;
+  chamarSomar: (nat, nat) -> (nat) query;
+  chamarSubtrair: (nat, nat) -> (nat) query;
+}
