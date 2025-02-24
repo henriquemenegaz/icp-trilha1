@@ -33,10 +33,14 @@ content: [ "./src/**/*.{js,jsx,ts,tsx}", ],
 @tailwind components;
 @tailwind utilities;
 ```
-6. Volte à pasta raiz do projeto.
 
 
+## Deploy
 
+Precisa faze deploy no playground (para testar) ou na mainnet (para usar em produção) porque a autenticação é feita no ICP. Não dá para testar localmente.
+```bash
+dfx deploy --playground
+```
 
 
 
