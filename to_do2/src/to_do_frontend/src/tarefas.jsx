@@ -1,24 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { to_do_backend } from 'declarations/to_do_backend';
+import { AuthClient } from "@dfinity/auth-client";
+import { AuthContext } from './AuthContext';
 
-function tarefas() {
+function Tarefas() {
   const [tarefas, setTarefas] = useState([]);
   const [totalEmAndamento, setTotalEmAndamento] = useState(0);
   const [totalConcluidas, setTotalConcluidas] = useState(0);
+  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
 
-  // Atualiza a lista de tarefas e os totalizadores
   async function atualizarDados() {
     await consultarTarefas();
     await obterTotais();
   }
 
-  // Consulta a lista de tarefas
   async function consultarTarefas() {
     const lista = await to_do_backend.getTarefas();
     setTarefas(lista);
   }
 
-  // Obtém os totalizadores de tarefas do backend
   async function obterTotais() {
     const totalAndamento = parseInt(await to_do_backend.totalTarefasEmAndamento());
     const totalConcl = parseInt(await to_do_backend.totalTarefasConcluidas());
@@ -26,7 +26,6 @@ function tarefas() {
     setTotalConcluidas(totalConcl);
   }
 
-  // useEffect para inicializar os dados
   useEffect(() => {
     atualizarDados();
   }, []);
@@ -37,7 +36,7 @@ function tarefas() {
   }
 
   async function alterar(id, categoria, descricao, urgente, concluida) {
-    await p1_to_do_backend.alterarTarefa(parseInt(id), categoria, descricao, urgente, concluida);
+    await to_do_backend.alterarTarefa(parseInt(id), categoria, descricao, urgente, concluida);
     atualizarDados();
   }
 
@@ -50,32 +49,35 @@ function tarefas() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-
     const idTarefa = event.target.elements.idTarefa.value;
     const categoria = event.target.elements.categoria.value;
     const descricao = event.target.elements.descricao.value;
     const urgente = (event.target.elements.urgente.value === "false" ? false : true);
-
     if (idTarefa === null || idTarefa === "") {
-      await p1_to_do_backend.addTarefa(descricao, categoria, false, false);
+      await to_do_backend.addTarefa(descricao, categoria, false, false);
     } else {
-      await p1_to_do_backend.alterarTarefa(parseInt(idTarefa), categoria, descricao, urgente, false);
+      await to_do_backend.alterarTarefa(parseInt(idTarefa), categoria, descricao, urgente, false);
     }
-
     atualizarDados();
-
     event.target.elements.idTarefa.value = "";
     event.target.elements.categoria.value = "";
     event.target.elements.descricao.value = "";
     event.target.elements.urgente.value = "";
   }
 
+  async function logout() {
+    const authClient = await AuthClient.create();
+    await authClient.logout();
+    setIsLoggedIn(false);
+    window.location.href = "/";
+  };
+
   return (
     <main class="mt-[30px] mx-[30px]">
-      {/* Formulário para adicionar/alterar tarefas */}
       <form id="formTarefas" class="flex space-x-4" onSubmit={handleSubmit}>
+        {/* Formulário para adicionar/alterar tarefas */}
         <div class="w-[15%]">
-          <select id="categoria" class="block w-full px-4 py-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50">
+          <select id="categoria" class="block w-full px-4 py-4 text-sm border rounded-lg bg-gray-50">
             <option selected>Categoria</option>
             <option value="Trabalho">Trabalho</option>
             <option value="Saúde">Saúde</option>
@@ -88,24 +90,20 @@ function tarefas() {
             <option value="Outros">Outros</option>
           </select>
         </div>
-
         <div class="w-[85%] relative">
-          <input type="text" id="descricao" class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50" placeholder="Adicione uma tarefa" required />
+          <input type="text" id="descricao" class="block w-full p-4 pl-10 text-sm border rounded-lg bg-gray-50" placeholder="Adicione uma tarefa" required />
           <button type="submit" class="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-lg">Adicionar</button>
         </div>
         <input type="hidden" name="idTarefa" />
         <input type="hidden" name="urgente" />
       </form>
-
       <br />
-
-      {/* Tarefas em andamento */}
-      <div class="w-full p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div class="w-full p-4 bg-white border rounded-lg shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <h5 class="text-xl font-bold">Tarefas em andamento</h5>
         </div>
         <div class="flow-root">
-          <ul role="list" class="divide-y divide-gray-200">
+          <ul role="list" class="divide-y">
             {tarefas.filter(ta => !ta.concluida).map(ta => (
               <li class="py-3">
                 <div class="flex items-center">
@@ -122,8 +120,8 @@ function tarefas() {
                       )}
                     </a>
                   </div>
-                  <div class="flex-1 min-w-0 ms-4">
-                    <p class="text-sm font-medium text-gray-900 truncate">{ta.categoria}</p>
+                  <div class="flex-1 ms-4">
+                    <p class="text-sm font-medium truncate">{ta.categoria}</p>
                     <p class="text-sm text-gray-500 truncate">{ta.descricao}</p>
                   </div>
                   <div class="inline-flex items-center">
@@ -154,21 +152,17 @@ function tarefas() {
             ))}
           </ul>
         </div>
-        {/* Totalizador de tarefas em andamento */}
         <div class="mt-4 font-bold">
           TOTAL: {totalEmAndamento}
         </div>
       </div>
-
       <br />
-
-      {/* Tarefas concluídas */}
-      <div class="w-full p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div class="w-full p-4 bg-white border rounded-lg shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <h5 class="text-xl font-bold">Tarefas concluídas</h5>
         </div>
         <div class="flow-root">
-          <ul role="list" class="divide-y divide-gray-200">
+          <ul role="list" class="divide-y">
             {tarefas.filter(ta => ta.concluida).map(ta => (
               <li class="py-3">
                 <div class="flex items-center">
@@ -183,8 +177,8 @@ function tarefas() {
                       </svg>
                     )}
                   </div>
-                  <div class="flex-1 min-w-0 ms-4">
-                    <p class="text-sm font-medium text-gray-900 truncate">{ta.categoria}</p>
+                  <div class="flex-1 ms-4">
+                    <p class="text-sm font-medium truncate">{ta.categoria}</p>
                     <p class="text-sm text-gray-500 truncate">{ta.descricao}</p>
                   </div>
                 </div>
@@ -192,13 +186,23 @@ function tarefas() {
             ))}
           </ul>
         </div>
-        {/* Totalizador de tarefas concluídas */}
         <div class="mt-4 font-bold">
           TOTAL: {totalConcluidas}
         </div>
       </div>
+      <br />
+      <div className="flex justify-center mt-4">
+        <button
+          className="text-white bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-lg"
+          id="logout"
+          onClick={logout}
+        >
+          Logout
+        </button>
+      </div>
+
     </main>
   );
 }
 
-export default tarefas;
+export default Tarefas;
