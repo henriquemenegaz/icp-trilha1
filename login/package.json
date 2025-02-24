@@ -16,6 +16,6 @@
     "src/login_frontend"
   ],
   "dependencies": {
-    "@dfinity/auth-client": "^2.1.3"
+    "@dfinity/auth-client": "^2.3.0"
   }
 }

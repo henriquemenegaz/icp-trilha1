@@ -1,0 +1,3 @@
+service : {
+  get_principal_client: () -> (text);
+}

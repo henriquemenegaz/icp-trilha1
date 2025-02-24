@@ -1,0 +1,16 @@
+type Tarefa = 
+ record {
+   categoria: text;
+   concluida: bool;
+   descricao: text;
+   id: nat;
+   urgente: bool;
+ };
+service : {
+  addTarefa: (text, text, bool, bool) -> ();
+  alterarTarefa: (nat, text, text, bool, bool) -> ();
+  excluirTarefa: (nat) -> ();
+  getTarefas: () -> (vec Tarefa);
+  totalTarefasConcluidas: () -> (nat);
+  totalTarefasEmAndamento: () -> (nat);
+}

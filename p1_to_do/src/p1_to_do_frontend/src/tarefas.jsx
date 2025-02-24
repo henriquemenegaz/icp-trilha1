@@ -1,10 +1,26 @@
 import { useState, useEffect } from 'react';
 import { p1_to_do_backend } from 'declarations/p1_to_do_backend';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function tarefas() {
   const [tarefas, setTarefas] = useState([]);
   const [totalEmAndamento, setTotalEmAndamento] = useState(0);
   const [totalConcluidas, setTotalConcluidas] = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isLoggedIn = location.state?.isLoggedIn || false;
+
+  // Verifica se está logado, se não estiver redireciona para login
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/');
+    }
+  }, [isLoggedIn, navigate]);
+
+  // Função de logout
+  const handleLogout = () => {
+    navigate('/', { state: { isLoggedIn: false } });
+  };
 
   // Atualiza a lista de tarefas e os totalizadores
   async function atualizarDados() {
@@ -72,6 +88,16 @@ function tarefas() {
 
   return (
     <main class="mt-[30px] mx-[30px]">
+      {/* Adicionar botão de logout no topo */}
+      <div class="flex justify-end mb-4">
+        <button
+          onClick={handleLogout}
+          class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </div>
+
       {/* Formulário para adicionar/alterar tarefas */}
       <form id="formTarefas" class="flex space-x-4" onSubmit={handleSubmit}>
         <div class="w-[15%]">
